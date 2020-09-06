@@ -8,24 +8,32 @@ import numpy as np
 client = InfluxDBClient(host="192.168.1.50", port=8086)
 client.switch_database('telegraf')
 
-query = '''
-            SELECT "pv1_power"
-            FROM "mqtt_consumer"
-            WHERE ("topic" = '6hull/solar')
-            ORDER BY time DESC
-            LIMIT 100
-        '''
-# print(query)
-results = client.query(query)
-points = list(results.get_points())
+def solar_data(client, days_ago):
+                # SELECT "pv1_power"
+                # SELECT "pv2_power"
+                # SELECT "total_pv_power"
+    query = '''
+                SELECT "total_pv_power"
+                FROM "mqtt_consumer"
+                WHERE ("topic" = '6hull/solar') AND
+                    time > now() - {}d AND
+                    time < now() - {}d
+            '''
+    results = client.query(query.format(days_ago,days_ago-1))
+    points = list(results.get_points())
 
-times = [x["time"] for x in points]
-values = [x["pv1_power"] for x in points]
-print(times)
-print(values)
+    # times = [x["time"] for x in points]
+    values = [x["total_pv_power"] for x in points]
+    return values
+# print(times)
+# print(values)
 
 # print x_val
-plt.plot(times, values)
+plt.plot(solar_data(client,1), label='Today', linewidth=1, c="purple")
+plt.plot(solar_data(client,2), label='Yesterday', linewidth=1, c="red")
+plt.plot(solar_data(client,3), label='Day before yesterday', linewidth=1, c="blue")
+# plt.plot(times, values)
+# plt.plot_date(times, values, xdate=True, ydate=False)
 plt.show()
 
     # print(results.raw)
