@@ -1,18 +1,31 @@
 #!/usr/bin/python3
+# https://www.influxdata.com/blog/getting-started-python-influxdb/
 
 from influxdb import InfluxDBClient
+import matplotlib.pyplot as plt
+import numpy as np
 
 client = InfluxDBClient(host="192.168.1.50", port=8086)
-print(client.get_list_database())
 client.switch_database('telegraf')
 
 query = '''
-            SELECT "value"
+            SELECT "pv1_power"
             FROM "mqtt_consumer"
-            WHERE ("topic" = '6hull/power_price/import/5m_bid_sigma')
+            WHERE ("topic" = '6hull/solar')
             ORDER BY time DESC
-            LIMIT 1
+            LIMIT 100
         '''
 # print(query)
 results = client.query(query)
-print(results.raw)
+points = list(results.get_points())
+
+times = [x["time"] for x in points]
+values = [x["pv1_power"] for x in points]
+print(times)
+print(values)
+
+# print x_val
+plt.plot(times, values)
+plt.show()
+
+    # print(results.raw)
