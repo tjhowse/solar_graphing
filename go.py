@@ -24,8 +24,8 @@ def solar_data(client, series, days_ago):
                 SELECT "{}"
                 FROM "mqtt_consumer"
                 WHERE ("topic" = '6hull/solar') AND
-                    time > '2020-08-23T06:00:00Z' - 10h + {}d AND
-                    time < '2020-08-23T18:00:00Z' - 10h + {}d
+                    time > '{}T06:00:00Z' - 10h AND
+                    time < '{}T18:00:00Z' - 10h
             '''
     results = client.query(query.format(series, days_ago, days_ago))
     points = list(results.get_points())
@@ -39,14 +39,14 @@ def solar_data(client, series, days_ago):
 # print x_val
 plt.rc('axes', prop_cycle=(cycler('color', ['r', 'g', 'b', 'y', 'm']) +
                            cycler('linestyle', ['-', '-', '-', '-', '-'])))
-for i in range(5):
-    plt.plot(solar_data(client, "pv1_power", i), label=i, linewidth=1)
-# plt.plot(solar_data(client, "pv1_power", 1), label='Yesterday', linewidth=1)
-# plt.plot(solar_data(client, "pv1_power", 2), label='Day before yesterday', linewidth=1)
-# plt.plot(times, values)
-# plt.plot_date(times, values, xdate=True, ydate=False)
+# for i in range(5):
+#     plt.plot(solar_data(client, "pv1_power", i), label=i, linewidth=1)
+def plot_day(date):
+    plt.plot(solar_data(client, "pv1_power", date), label=date, linewidth=1)
+plot_day('2020-08-25')
+plot_day('2020-08-28')
 plt.xlabel("Time")
-plt.ylabel("Total solar power (kW)")
+plt.ylabel("Total solar power (W)")
 plt.legend()
 plt.show()
 
