@@ -21,17 +21,20 @@ def solar_data(client, series, days_ago):
     #                 time < now() - {}d
     #         '''
     query = '''
-                SELECT "{}"
+                SELECT mean("{}")
                 FROM "mqtt_consumer"
                 WHERE ("topic" = '6hull/solar') AND
                     time > '{}T06:00:00Z' - 10h AND
                     time < '{}T18:00:00Z' - 10h
+                GROUP BY time(1m)
             '''
     results = client.query(query.format(series, days_ago, days_ago))
+    # print(results.raw)
     points = list(results.get_points())
 
     # times = [x["time"] for x in points]
-    values = [x[series] for x in points]
+    values = [x["mean"] for x in points]
+    # values = [x[series] for x in points]
     return values
 # print(times)
 # print(values)
@@ -42,7 +45,10 @@ plt.rc('axes', prop_cycle=(cycler('color', ['r', 'g', 'b', 'y', 'm']) +
 # for i in range(5):
 #     plt.plot(solar_data(client, "pv1_power", i), label=i, linewidth=1)
 def plot_day(date):
-    plt.plot(solar_data(client, "pv1_power", date), label=date, linewidth=1)
+    # plt.plot(solar_data(client, "pv1_power", date), label=date, linewidth=1)
+    plt.plot(solar_data(client, "total_pv_power", date), label=date, linewidth=1)
+# for i in range(1,9):
+#     plot_day('2020-{0:02d}-25'.format(i))
 plot_day('2020-08-25')
 plot_day('2020-08-28')
 plt.xlabel("Time")
